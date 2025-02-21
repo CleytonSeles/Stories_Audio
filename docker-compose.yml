@@ -1,0 +1,57 @@
+version: '3.8'
+services:
+  auth-service:
+    build: ./Backend/auth-service
+    container_name: auth-service
+    ports:
+      - "3001:3001"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=123456
+      - POSTGRES_DB=stories_audio_auth
+    depends_on:
+      - db
+
+  audio-service:
+    build: ./Backend/audio-service
+    container_name: audio-service
+    ports:
+      - "3002:3002"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=123456
+      - POSTGRES_DB=stories_audio_audio
+    depends_on:
+      - db
+
+  gateway-service:
+    build: ./Backend/gateway-service
+    container_name: gateway-service
+    ports:
+      - "3000:3000"
+    depends_on:
+      - auth-service
+      - audio-service
+
+  frontend:
+    build: ./Frontend/stories-audio
+    container_name: frontend
+    ports:
+      - "8080:8080"
+    depends_on:
+      - gateway-service
+
+  db:
+    image: postgres:13
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123456
+      POSTGRES_DB: stories_audio_auth
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
