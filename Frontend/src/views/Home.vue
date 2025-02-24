@@ -7,6 +7,7 @@
         <button @click="deleteAudio(audio.id)">Delete</button>
       </li>
     </ul>
+    <div v-if="errorMessage" class="error">{{ errorMessage }}</div>
   </div>
 </template>
 
@@ -18,6 +19,7 @@ export default {
   data() {
     return {
       audios: [],
+      errorMessage: '',
     };
   },
   created() {
@@ -29,6 +31,7 @@ export default {
         const response = await apiClient.get('/audio/list');
         this.audios = response.data;
       } catch (error) {
+        this.errorMessage = 'Error fetching audios: ' + error.response.data.message;
         console.error('Error fetching audios:', error);
       }
     },
@@ -37,6 +40,7 @@ export default {
         await apiClient.delete(`/audio/${id}`);
         this.fetchAudios();
       } catch (error) {
+        this.errorMessage = 'Error deleting audio: ' + error.response.data.message;
         console.error('Error deleting audio:', error);
       }
     },

@@ -5,7 +5,9 @@
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "lint": "vue-cli-service lint",
+    "test": "vue-cli-service test:unit",
+    "format": "prettier --write src/**/*.{js,vue}"
   },
   "dependencies": {
     "axios": "^1.7.9",
@@ -20,7 +22,10 @@
     "@vue/cli-plugin-eslint": "~5.0.0",
     "@vue/cli-service": "~5.0.0",
     "eslint": "^7.32.0",
-    "eslint-plugin-vue": "^8.0.3"
+    "eslint-plugin-vue": "^8.0.3",
+    "prettier": "^2.3.2",
+    "@vue/test-utils": "^2.0.0-rc.12",
+    "jest": "^26.6.3"
   },
   "eslintConfig": {
     "root": true,

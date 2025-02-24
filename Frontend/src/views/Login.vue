@@ -1,7 +1,7 @@
 <template>
   <div>
-    <h1>Signup</h1>
-    <form @submit.prevent="signup">
+    <h1>Login</h1>
+    <form @submit.prevent="login">
       <div>
         <label for="username">Username:</label>
         <input type="text" v-model="username" id="username" required>
@@ -10,7 +10,8 @@
         <label for="password">Password:</label>
         <input type="password" v-model="password" id="password" required>
       </div>
-      <button type="submit">Signup</button>
+      <button type="submit">Login</button>
+      <div v-if="errorMessage" class="error">{{ errorMessage }}</div>
     </form>
   </div>
 </template>
@@ -19,25 +20,29 @@
 import apiClient from '../services/api';
 
 export default {
-  name: 'SignupView',
+  name: 'LoginView',
   data() {
     return {
       username: '',
       password: '',
+      errorMessage: '',
     };
   },
   methods: {
-    async signup() {
+    async login() {
       try {
-        await apiClient.post('/auth/signup', {
+        const response = await apiClient.post('/auth/login', {
           username: this.username,
           password: this.password,
         });
-        this.$router.push('/login');
+        localStorage.setItem('token', response.data.token);
+        this.$router.push('/');
       } catch (error) {
-        console.error('Error signing up:', error);
+        this.errorMessage = 'Error logging in: ' + error.response.data.message;
+        console.error('Error logging in:', error);
       }
     },
   },
 };
 </script>
+

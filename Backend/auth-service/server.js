@@ -1,28 +1,32 @@
 const fastify = require('fastify')({ logger: true });
-const jwt = require('@fastify/jwt');
-const pool = require('./db')
-fastify.register(jwt, { secret: process.env.JWT_SECRET || 'supersecret' });
+const jwt = require('fastify-jwt');
+const pool = require('./db');
+const bcrypt = require('bcrypt');
+fastify.register(require('@fastify/formbody'));
+fastify.register(jwt, { secret: 'supersecret' });
 
 fastify.post('/auth/signup', async (request, reply) => {
   const { username, password } = request.body;
-  // Verificar se o usuário já existe
   const { rowCount } = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
   if (rowCount > 0) {
     return reply.status(400).send({ error: 'Usuário já existe' });
   }
-  // Criar novo usuário
-  await pool.query('INSERT INTO users (username, password) VALUES ($1, $2)', [username, password]);
+  const hashedPassword = await bcrypt.hash(password, 10);
+  await pool.query('INSERT INTO users (username, password) VALUES ($1, $2)', [username, hashedPassword]);
   reply.send({ message: 'Usuário criado com sucesso' });
 });
 
 fastify.post('/auth/login', async (request, reply) => {
   const { username, password } = request.body;
-  // Verificar credenciais do usuário
-  const { rows } = await pool.query('SELECT * FROM users WHERE username = $1 AND password = $2', [username, password]);
+  const { rows } = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
   if (rows.length === 0) {
     return reply.status(400).send({ error: 'Credenciais inválidas' });
   }
-  // Gerar token JWT
+  const user = rows[0];
+  const validPassword = await bcrypt.compare(password, user.password);
+  if (!validPassword) {
+    return reply.status(400).send({ error: 'Credenciais inválidas' });
+  }
   const token = fastify.jwt.sign({ username });
   reply.send({ token });
 });
@@ -51,4 +55,3 @@ const start = async () => {
   }
 };
 start();
-

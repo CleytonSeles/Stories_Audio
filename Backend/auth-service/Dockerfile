@@ -9,6 +9,12 @@ COPY package*.json ./
 # Instalar dependências
 RUN npm install
 
+# Reinstalar bcrypt para a arquitetura correta
+RUN npm rebuild bcrypt --build-from-source
+
+# Remover node_modules local para evitar conflitos
+RUN rm -rf node_modules
+
 # Copiar o restante dos arquivos
 COPY . .
 

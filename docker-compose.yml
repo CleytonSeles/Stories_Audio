@@ -1,32 +1,48 @@
 version: '3.8'
+
 services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-123456}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
   auth-service:
-    build: ./Backend/auth-service
-    container_name: auth-service
+    build:
+      context: ./Backend/auth-service
     ports:
       - "3001:3001"
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=123456
-      - POSTGRES_DB=stories_audio_auth
     depends_on:
-      - db
+      - postgres
+    environment:
+      PGUSER: ${POSTGRES_USER:-postgres}
+      PGPASSWORD: ${POSTGRES_PASSWORD:-123456}
+      PGDATABASE: stories_audio_auth
+      PGHOST: postgres
+      PGPORT: 5432
 
   audio-service:
-    build: ./Backend/audio-service
-    container_name: audio-service
+    build:
+      context: ./Backend/audio-service
     ports:
       - "3002:3002"
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=123456
-      - POSTGRES_DB=stories_audio_audio
     depends_on:
-      - db
+      - postgres
+    environment:
+      PGUSER: ${POSTGRES_USER:-postgres}
+      PGPASSWORD: ${POSTGRES_PASSWORD:-123456}
+      PGDATABASE: stories_audio_audio
+      PGHOST: postgres
+      PGPORT: 5432
 
   gateway-service:
-    build: ./Backend/gateway-service
-    container_name: gateway-service
+    build:
+      context: ./Backend/gateway-service
     ports:
       - "3000:3000"
     depends_on:
@@ -34,24 +50,12 @@ services:
       - audio-service
 
   frontend:
-    build: ./Frontend/stories-audio
-    container_name: frontend
+    build:
+      context: ./Frontend
     ports:
-      - "8080:8080"
+      - "8080:3000"
     depends_on:
       - gateway-service
-
-  db:
-    image: postgres:13
-    container_name: postgres
-    ports:
-      - "5432:5432"
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 123456
-      POSTGRES_DB: stories_audio_auth
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
 
 volumes:
   postgres_data:

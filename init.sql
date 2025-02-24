@@ -1,0 +1,2 @@
+CREATE DATABASE stories_audio_auth;
+CREATE DATABASE stories_audio_audio;
